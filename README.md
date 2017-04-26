@@ -39,12 +39,12 @@ $make ARCH=arm menuconfig
 ```
 And then go to menu
 ```
-	[Device Drivers] => [Sound card support] => [Advanced Linux Sound Architecture]
-	[ALSA for SoC audio support]=> [Support for Smart Speaker Pi add on soundcard (USB)]
+[Device Drivers] => [Sound card support] => [Advanced Linux Sound Architecture] =>
+[ALSA for SoC audio support]=> [Support for Smart Speaker Pi add on soundcard (USB)]
 ```
 Check the following item.
 ```
-	[Support for Smart Speaker Pi add on soundcard (I2S)]
+[Support for Smart Speaker Pi add on soundcard (I2S)]
 ```
 ## 5. Build kerenl and modules .
 
@@ -71,8 +71,8 @@ following path.
 A) The I2S format can be change by modify the .dai_fmt
 
 ```c
-          .dai_fmt = SND_SOC_DAIFMT_CBM_CFM |                             
-                    SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF, 
+	.dai_fmt = SND_SOC_DAIFMT_CBM_CFM |                             
+		   SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF, 
 ```	
 within structure below.
 
