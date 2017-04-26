@@ -77,18 +77,18 @@ A) The I2S format can be change by modify the .dai_fmt
 within structure below.
 
 ```c
-	static struct snd_soc_dai_link cxsmtspk_pi_soundcard_dai[] = {                  
-			{                                                                       
-					.name = "System",                                               
-					.stream_name = "System Playback",                               
-					.cpu_dai_name   = "bcm2708-i2s.0",                              
-					.platform_name  = "bcm2708-i2s.0",                              
-					.codec_dai_name = "cx2072x-dsp",                                
-					.codec_name = "cx2072x.1-0033",                                 
-					.ops = &snd_cxsmtspk_pi_soundcard_ops,                          
-					.init = cxsmtspk_pi_soundcard_dai_init,                         
-					.dai_fmt = SND_SOC_DAIFMT_CBM_CFM |                             
-							SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF, 
+static struct snd_soc_dai_link cxsmtspk_pi_soundcard_dai[] = {                  
+	{                                                                       
+		.name = "System",                                               
+		.stream_name = "System Playback",                               
+		.cpu_dai_name   = "bcm2708-i2s.0",                              
+		.platform_name  = "bcm2708-i2s.0",                              
+		.codec_dai_name = "cx2072x-dsp",                                
+		.codec_name = "cx2072x.1-0033",                                 
+		.ops = &snd_cxsmtspk_pi_soundcard_ops,                          
+		.init = cxsmtspk_pi_soundcard_dai_init,                         
+		.dai_fmt = SND_SOC_DAIFMT_CBM_CFM |                             
+			   SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF, 
 ```
 	
 Where SND_SOC_DAIFMT_CBM_CFM stand for codec is I2S Master. 
@@ -100,28 +100,26 @@ B) The MCLK frequency is specified by ALSA API below. The default value is
     12.288 MHz 
 
 ```c
-	snd_soc_dai_set_sysclk(rtd->codec_dai, 1, CX20921_MCLK_HZ,       
-                SND_SOC_CLOCK_IN);                                              
+snd_soc_dai_set_sysclk(rtd->codec_dai, 1, CX20921_MCLK_HZ,       
+		       SND_SOC_CLOCK_IN);                                              
 ```				
 The following is code snap of MCLK settings.
 
 ```c
-	#define CX20921_MCLK_HZ  12288000   
-	static int cxsmtspk_pi_soundcard_dai_init(struct snd_soc_pcm_runtime *rtd)      
-	{                                                                               
-			/* DOTO: Keep the mic paths active druing suspend.                      
-			*                                                                      
-			*/                                                                     
-			struct snd_soc_card *card = rtd->card;                                  
-                                                                                
-			dev_dbg(card->dev, "dai_init()\n");                                     
-                                                                                
-			snd_soc_dapm_enable_pin(&card->dapm, "AEC REF");                        
-			snd_soc_dapm_sync(&card->dapm);                                         
-                                                                                
-			return snd_soc_dai_set_sysclk(rtd->codec_dai, 1, CX20921_MCLK_HZ,       
-					SND_SOC_CLOCK_IN);                                              
-	}                                                                               
+#define CX20921_MCLK_HZ  12288000   
+static int cxsmtspk_pi_soundcard_dai_init(struct snd_soc_pcm_runtime *rtd)      
+{                                                                               
+	/* DOTO: Keep the mic paths active druing suspend.                      
+	 *                                                                      
+	 */                                                                     
+	struct snd_soc_card *card = rtd->card;                                  
+	dev_dbg(card->dev, "dai_init()\n");                                     
 
+	snd_soc_dapm_enable_pin(&card->dapm, "AEC REF");                        
+	snd_soc_dapm_sync(&card->dapm);                                         
+
+	return snd_soc_dai_set_sysclk(rtd->codec_dai, 1, CX20921_MCLK_HZ,       
+				      SND_SOC_CLOCK_IN);                                              
+}                                                  
 ```
 
