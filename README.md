@@ -1,10 +1,10 @@
-# Conexant AudioSmart 4-Mic Development Kit driver Porting Guide.
+# Conexant AudioSmart 4-Mic Development Kit Driver Porting Guide.
 
 This page provides porting guidelines for Conexant AudioSmart Dev Kit.  
 
 The folder rpi-patch/ contains driver patches are based on RPi kerenl branch "rpi-4.4.y" with kernel version 4.4.50 or commit id "e223d71ef728c559aa865d0c5a4cedbdf8789cfd"
 
-Please note that the patch mihgt be not applied cleanly if you are using different kernel version. Fot that case, you need to take look at what changes are in the patch, and add them to you kernel manually.
+Please note that the patch might be not applied cleanly if you are using different kernel version. Fot that case, you need to take look at what changes are in the patch, and add them to you kernel manually.
 
 Porting the driver requires the followig steps. 
 
@@ -16,8 +16,9 @@ $cd linux
 $git checkout
 ```
 
-## 2. Roll back to kerenl v4.4.50
+## 2. Roll back to kerenl v4.4.50 [option]
 
+If you want the patch files can be applied cleanly, you can roll back to kernel 4.4.50.
 ```
 $git reset --hard e223d71ef728c559aa865d0c5a4cedbdf8789cfd
 ```	
