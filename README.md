@@ -39,51 +39,52 @@ $make bcm2709_defconfig
 ```
 Open menu config, there are two option depends where 
 you build the kernel. If you build the kernel locally.
-```
-4.3a $make menuconfig
-`
-	else if you use cross compiler.
-4.3b $make ARCH=arm menuconfig
 
-	And then go to 
+```
+$make ARCH=arm menuconfig
+```
+
+And then go to 
+```
 	[Device Drivers] => [Sound card support] => [Advanced Linux Sound Architecture]
 	[ALSA for SoC audio support]=> [Support for Smart Speaker Pi add on soundcard (USB)]
+```
 
-	Check the following item.
+Check the following item.
+```
 	[Support for Smart Speaker Pi add on soundcard (I2S)]
-
-########################################################################
-#5- Build kerenl and modules .
+```
+##5- Build kerenl and modules .
 
 Following insturation on the following link to build and insatll kernel
 https://www.raspberrypi.org/documentation/linux/kernel/building.md
 
-########################################################################
-#6- Load the overlay DT.
+##6- Load the overlay DT.
 
-6.1 open /boot/config.txt and add the following statemnt.
+open /boot/config.txt and add the following statemnt.
 
-	dtoverlay=rpi-cxsmartspk-usb
+```
+dtoverlay=rpi-cxsmartspk-usb
+```
 
-	
-DONE
 
-######################################
-#   Change the MCLK and I2S setting. #
-######################################
-
+## Change the MCLK and I2S setting.
 Both MCLK and I2S setting are specified within ASoC machine driver in the
 following path.
 
-	<Kerenl Tree>/sound/soc/bcm/cxsmtspk-pi-usb.c
+```
+<Kerenl Tree>/sound/soc/bcm/cxsmtspk-pi-usb.c
+```
 
 A) The I2S format can be change by modify the .dai_fmt
 
+```c
           .dai_fmt = SND_SOC_DAIFMT_CBM_CFM |                             
                     SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF, 
-	
-	within structure below.
+```	
+within structure below.
 
+```c
 	static struct snd_soc_dai_link cxsmtspk_pi_soundcard_dai[] = {                  
 			{                                                                       
 					.name = "System",                                               
@@ -96,21 +97,23 @@ A) The I2S format can be change by modify the .dai_fmt
 					.init = cxsmtspk_pi_soundcard_dai_init,                         
 					.dai_fmt = SND_SOC_DAIFMT_CBM_CFM |                             
 							SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF, 
-
+```
 	
-	Where SND_SOC_DAIFMT_CBM_CFM stand for codec is I2S Master. 
-	Please change it to SND_SOC_DAIFMT_CBS_CFS if you want the SoC as I2S
-	Master.
+Where SND_SOC_DAIFMT_CBM_CFM stand for codec is I2S Master. 
+Please change it to SND_SOC_DAIFMT_CBS_CFS if you want the SoC as I2S
+Master.
 	
 							
 B ) The MCLK frequency is specified by ALSA API below. The default value is
     12.288 MHz 
-							
+
+```c
 	snd_soc_dai_set_sysclk(rtd->codec_dai, 1, CX20921_MCLK_HZ,       
                 SND_SOC_CLOCK_IN);                                              
-				
-	The following is code snap of MCLK settings.
-	
+```				
+The following is code snap of MCLK settings.
+
+```c
 	#define CX20921_MCLK_HZ  12288000   
 	static int cxsmtspk_pi_soundcard_dai_init(struct snd_soc_pcm_runtime *rtd)      
 	{                                                                               
@@ -128,5 +131,5 @@ B ) The MCLK frequency is specified by ALSA API below. The default value is
 					SND_SOC_CLOCK_IN);                                              
 	}                                                                               
 
+```
 
-# Conexant I2S Driver patches
