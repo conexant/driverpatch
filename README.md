@@ -23,12 +23,12 @@ $git checkout
 ```
 $git reset --hard e223d71ef728c559aa865d0c5a4cedbdf8789cfd
 ```	
-
 ## 3. Apply the patches.
 
-````
+```
 $git am /path/to/patch/folder/*.patch
 ```
+
 ## 4. Enable audio drivers for Smart Speaker EVK.
 
 load the default setting for RPi3/2
