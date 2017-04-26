@@ -1,0 +1,197 @@
+From ebf2b03ed9456c8640a36c17872a00750944746f Mon Sep 17 00:00:00 2001
+From: Simon Ho <simon.ho@conexant.com>
+Date: Wed, 1 Mar 2017 14:15:00 -0800
+Subject: [PATCH 7/8] ASoC: CX2072X: Fixed the no sound output if EQ is
+ enabled.
+
+Fixed the no sound issue casued by EQ. also changed back the idle power
+state from bias_off to bias_standy to prevent from any potential risk
+for Smart Speaker demo. We need to more tests before changing the idle
+power to bias_off.
+
+Signed-off-by: Simon Ho <simon.ho@conexant.com>
+---
+ sound/soc/codecs/cx2072x.c | 68 ++++++++++++++--------------------------------
+ sound/soc/codecs/cx2072x.h |  4 +--
+ 2 files changed, 22 insertions(+), 50 deletions(-)
+
+diff --git a/sound/soc/codecs/cx2072x.c b/sound/soc/codecs/cx2072x.c
+index 2198946..81c243c 100644
+--- a/sound/soc/codecs/cx2072x.c
++++ b/sound/soc/codecs/cx2072x.c
+@@ -9,8 +9,8 @@
+  * published by the Free Software Foundation.
+  *
+  *************************************************************************
+- *  Modified Date:  27/2/17
+- *  File Version:   4.4.52
++ *  Modified Date:  01/3/17
++ *  File Version:   4.4.53
+  ************************************************************************/
+ #define DEBUG
+ /*#define INTEL_MCLK_CONTROL*/
+@@ -1073,10 +1073,10 @@ static void cx2072x_update_eq_coeff(struct snd_soc_codec *codec)
+ 	int band, ch, value;
+ 
+ 	dev_dbg(cx2072x->dev, "Update eq\n");
+-
+ 	if (!cx2072x->plbk_eq_changed) return ;
++	if (!cx2072x->plbk_eq_en) return ;
+ 	/* set EQ to bypass mode before configuring the EQ settings */
+-	regmap_write(cx2072x->regmap, CX2072X_EQ_ENABLE_BYPASS, 0x6e0f);
++	regmap_write(cx2072x->regmap, CX2072X_EQ_ENABLE_BYPASS, 0x620f);
+ 
+ 	for (ch = 0; ch < 2; ch++)
+ 		for (band = 0; band < CX2072X_PLBK_EQ_BAND_NUM; band++) {
+@@ -1102,10 +1102,10 @@ static void cx2072x_update_eq_en(struct snd_soc_codec *codec)
+ 	if (cx2072x->plbk_eq_en_changed) {
+ 		if (cx2072x->plbk_eq_en)
+ 			regmap_write(cx2072x->regmap,
+-				       CX2072X_EQ_ENABLE_BYPASS, 0x6e03);
++				       CX2072X_EQ_ENABLE_BYPASS, 0x6203);
+ 		else
+ 			regmap_write(cx2072x->regmap,
+-				       CX2072X_EQ_ENABLE_BYPASS, 0x6e0c);
++				       CX2072X_EQ_ENABLE_BYPASS, 0x620c);
+ 
+ 		cx2072x->plbk_eq_en_changed = false;
+ 	}
+@@ -1115,7 +1115,7 @@ static void cx2072x_update_drc(struct snd_soc_codec *codec)
+ {
+ 	struct cx2072x_priv *cx2072x = get_cx2072x_priv(codec);
+ 
+-	if (cx2072x->plbk_drc_changed) {
++	if (cx2072x->plbk_drc_changed && cx2072x->plbk_drc_en) {
+ 		cx2072x_reg_bulk_write(codec, CX2072X_SPKR_DRC_ENABLE_STEP,
+ 			cx2072x->plbk_drc, MAX_DRC_REGS);
+ 		cx2072x->plbk_drc_changed = false;
+@@ -1157,6 +1157,12 @@ static void cx2072x_update_dsp(struct snd_soc_codec *codec)
+ 		/*skip since device is on D3 mode*/
+ 		return;
+ 
++	regmap_read(cx2072x->regmap, CX2072X_PORTG_POWER_STATE, &afg_reg);
++	if ((afg_reg & 0xf) != 0) {
++		dev_dbg(codec->dev, "failed to update dsp dueo portg is off\n");
++		/*skip since device is on D3 mode*/
++		return;
++	}
+ 	cx2072x_update_eq_coeff(codec);
+ 
+ 	cx2072x_update_eq_en(codec);
+@@ -1259,9 +1265,9 @@ static int portg_power_ev(struct snd_soc_dapm_widget *w,
+ #else
+ 	struct snd_soc_codec *codec = w->codec;
+ #endif
+-
+ 	switch (event) {
+ 	case SND_SOC_DAPM_POST_PMU:
++		dev_dbg(codec->dev, "portg_power_event\n");
+ 		cx2072x_update_dsp(codec);
+ 		break;
+ 	default:
+@@ -1307,6 +1313,9 @@ static int cx2072x_plbk_eq_en_put(struct snd_kcontrol *kcontrol,
+ 	struct cx2072x_priv *cx2072x = get_cx2072x_priv(codec);
+ 	const bool enable = ucontrol->value.integer.value[0];
+ 
++	dev_dbg(codec->dev, "plbk eq en, cur=%d, want=%d\n",
++		cx2072x->plbk_eq_en, enable);
++
+ 	if (ucontrol->value.integer.value[0] > 1)
+ 		return -EINVAL;
+ 
+@@ -1743,19 +1752,6 @@ static int cx2072x_prepare(struct snd_pcm_substream *substream,
+ 	struct snd_soc_codec *codec = dai->codec;
+ 	struct cx2072x_priv *cx2072x = get_cx2072x_priv(codec);
+ 
+-	/* set active */
+-	regmap_write(cx2072x->regmap, CX2072X_AFG_POWER_STATE, 0);
+-	regmap_write(cx2072x->regmap, CX2072X_PORTA_POWER_STATE, 0);
+-	regmap_write(cx2072x->regmap, CX2072X_PORTB_POWER_STATE, 0);
+-	regmap_write(cx2072x->regmap, CX2072X_PORTC_POWER_STATE, 3);
+-	regmap_write(cx2072x->regmap, CX2072X_PORTD_POWER_STATE, 0);
+-	regmap_write(cx2072x->regmap, CX2072X_PORTE_POWER_STATE, 0);
+-	regmap_write(cx2072x->regmap, CX2072X_PORTG_POWER_STATE, 0);
+-	regmap_write(cx2072x->regmap, CX2072X_MIXER_POWER_STATE, 0);
+-	regmap_write(cx2072x->regmap, CX2072X_ADC1_POWER_STATE, 0);
+-	regmap_write(cx2072x->regmap, CX2072X_ADC2_POWER_STATE, 3);
+-	regmap_write(cx2072x->regmap, CX2072X_DAC1_POWER_STATE, 0);
+-	regmap_write(cx2072x->regmap, CX2072X_DAC2_POWER_STATE, 3);
+ 	return 0;
+ }
+ #endif
+@@ -1763,28 +1759,6 @@ static int cx2072x_prepare(struct snd_pcm_substream *substream,
+ static void cx2072x_shutdown(struct snd_pcm_substream *substream,
+ 			     struct snd_soc_dai *dai)
+ {
+-	struct snd_soc_codec *codec = dai->codec;
+-	struct cx2072x_priv *cx2072x = get_cx2072x_priv(codec);
+-
+-	dev_dbg(cx2072x->dev,"dai_shutdown()\n");
+-	/* shutdown codec. */
+-	if (!snd_soc_codec_is_active(codec)) {
+-		dev_dbg(cx2072x->dev,"dai_shutdown()-turn off!\n");
+-		regcache_cache_only(cx2072x->regmap, false);
+-		regmap_write(cx2072x->regmap, CX2072X_PORTA_POWER_STATE, 3);
+-		regmap_write(cx2072x->regmap, CX2072X_PORTB_POWER_STATE, 3);
+-		regmap_write(cx2072x->regmap, CX2072X_PORTC_POWER_STATE, 3);
+-		regmap_write(cx2072x->regmap, CX2072X_PORTD_POWER_STATE, 3);
+-		regmap_write(cx2072x->regmap, CX2072X_PORTE_POWER_STATE, 3);
+-		regmap_write(cx2072x->regmap, CX2072X_PORTG_POWER_STATE, 3);
+-		regmap_write(cx2072x->regmap, CX2072X_MIXER_POWER_STATE, 3);
+-		regmap_write(cx2072x->regmap, CX2072X_ADC1_POWER_STATE, 3);
+-		regmap_write(cx2072x->regmap, CX2072X_ADC2_POWER_STATE, 3);
+-		regmap_write(cx2072x->regmap, CX2072X_DAC1_POWER_STATE, 3);
+-		regmap_write(cx2072x->regmap, CX2072X_DAC2_POWER_STATE, 3);
+-		regmap_write(cx2072x->regmap, CX2072X_AFG_POWER_STATE, 3);
+-		mdelay(200);
+-	}
+ }
+ 
+ static int cx2072x_set_dai_bclk_ratio(struct snd_soc_dai *dai,
+@@ -1945,8 +1919,6 @@ static const struct snd_soc_dapm_widget cx2072x_dapm_widgets[] = {
+ 
+ 	SND_SOC_DAPM_REG(snd_soc_dapm_switch, "PortA",
+ 		CX2072X_PORTA_POWER_STATE, 0, 0xFFF, 0x00, 0x03),
+-	SND_SOC_DAPM_REG(snd_soc_dapm_switch, "PortG",
+-		CX2072X_PORTG_POWER_STATE, 0, 0xFFF, 0x00, 0x03),
+ 	CX2072X_DAPM_SWITCH("PortG", CX2072X_PORTG_POWER_STATE, 0, 0xFF,
+ 		0x00, 0x03, portg_power_ev, SND_SOC_DAPM_POST_PMU),
+ 
+@@ -2143,7 +2115,7 @@ static int cx2072x_probe(struct snd_soc_codec *codec)
+ 	codec->control_data = cx2072x->regmap;
+ 
+ 
+-	dev_dbg(codec->dev, "codec version: 4.4.52\n");
++	dev_dbg(codec->dev, "codec version: 4.4.53\n");
+ 	regmap_read(cx2072x->regmap, CX2072X_VENDOR_ID, &ven_id);
+ 	regmap_read(cx2072x->regmap, CX2072X_REVISION_ID, &cx2072x->rev_id);
+ 	dev_dbg(codec->dev, "codec version: %08x,%08x\n",
+@@ -2410,8 +2382,8 @@ static struct snd_soc_codec_driver soc_codec_driver_cx2072x = {
+ 	.probe = cx2072x_probe,
+ 	.remove = cx2072x_remove,
+ 	.set_bias_level = cx2072x_set_bias_level,
+-	.suspend_bias_off = true,
+-	.idle_bias_off = 1,
++	.suspend_bias_off = false,
++	.idle_bias_off = 0,
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0))
+ 	.component_driver = {
+ 		.controls = cx2072x_snd_controls,
+diff --git a/sound/soc/codecs/cx2072x.h b/sound/soc/codecs/cx2072x.h
+index 5893230..0a508ca 100644
+--- a/sound/soc/codecs/cx2072x.h
++++ b/sound/soc/codecs/cx2072x.h
+@@ -9,8 +9,8 @@
+  * published by the Free Software Foundation.
+  *
+  *************************************************************************
+- *  Modified Date:  27/2/17
+- *  File Version:   4.4.52
++ *  Modified Date:  01/3/17
++ *  File Version:   4.4.53
+  ************************************************************************/
+ #define NUM_OF_DAI 1
+ #define CX2072X_MCLK_PLL 1
+-- 
+2.7.4
+

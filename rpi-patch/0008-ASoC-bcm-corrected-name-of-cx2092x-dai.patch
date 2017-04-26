@@ -1,0 +1,45 @@
+From 225a52921b93583bcd2556410de17996d3f6ec86 Mon Sep 17 00:00:00 2001
+From: Simon Ho <simon.ho@conexant.com>
+Date: Tue, 7 Mar 2017 10:34:11 +0800
+Subject: [PATCH 8/8] ASoC: bcm: corrected name of cx2092x dai.
+
+Fixed a binging failed due to incorrect dai name of cx2092x.
+
+Signed-off-by: Simon Ho <simon.ho@conexant.com>
+---
+ sound/soc/bcm/cxsmtspk-pi-i2s.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/sound/soc/bcm/cxsmtspk-pi-i2s.c b/sound/soc/bcm/cxsmtspk-pi-i2s.c
+index 1fb2a53..9c86084 100644
+--- a/sound/soc/bcm/cxsmtspk-pi-i2s.c
++++ b/sound/soc/bcm/cxsmtspk-pi-i2s.c
+@@ -89,7 +89,7 @@ static struct snd_soc_dai_link_component cxsmtspk_codecs[] = {
+ 		.name = "cx2072x.1-0033",
+ 	},
+ 	{ /* Playback*/
+-		.dai_name = "cx2092x",
++		.dai_name = "cx2092x-aif",
+ 		.name = "cx2092x.1-0041",
+ 	},
+ };
+@@ -121,7 +121,6 @@ static struct snd_soc_dai_link cxsmtspk_pi_soundcard_dai[] = {
+ static const struct snd_soc_dapm_widget cxsmtspk_dapm_widgets[] = {
+ 	SND_SOC_DAPM_HP("Headphone Jack", NULL),
+ 	SND_SOC_DAPM_SPK("Ext Spk", NULL),
+-	SND_SOC_DAPM_LINE("Line In Jacks", NULL),
+ 	SND_SOC_DAPM_MIC("Microphone", NULL),
+ };
+ 
+@@ -133,7 +132,7 @@ static const struct snd_soc_dapm_route cxsmtspk_audio_map[] = {
+ 	{"Ext Spk", NULL, "PORTG"},
+ 
+ 	/* mic is connected to CX20921 */
+-	{"DMIC",NULL, "Microphone"},
++	{"MIC",NULL, "Microphone"},
+ };
+ 
+ static struct snd_soc_card snd_soc_cxsmtspk = {
+-- 
+2.7.4
+

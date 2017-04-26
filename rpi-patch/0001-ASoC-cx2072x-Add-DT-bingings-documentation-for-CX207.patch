@@ -1,0 +1,59 @@
+From cff137c6653e934511c73ced96afa40087b63a09 Mon Sep 17 00:00:00 2001
+From: Simon Ho <simon.ho@conexant.com>
+Date: Fri, 16 Dec 2016 23:05:19 +0800
+Subject: [PATCH 1/8] ASoC: cx2072x: Add DT bingings documentation for CX2072X
+ CODEC
+
+Initial version of CX2072X device tree bindings document.
+
+Signed-off-by: Simon Ho <simon.ho@conexant.com>
+---
+ .../devicetree/bindings/sound/cx2072x.txt          | 36 ++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/sound/cx2072x.txt
+
+diff --git a/Documentation/devicetree/bindings/sound/cx2072x.txt b/Documentation/devicetree/bindings/sound/cx2072x.txt
+new file mode 100644
+index 0000000..05ddf7c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/sound/cx2072x.txt
+@@ -0,0 +1,36 @@
++Conexant CX20721/CX20723/CX7601 audio CODEC
++
++The devices support I2C only.
++
++Required properties:
++
++  - compatible : One of "cnxt,cx20721", "cnxt,cx20723", "cnxt,cx7601".
++
++  - reg : the I2C address of the device for I2C, it should be <0x33>
++
++Optional properties:
++
++  - clocks : phandle and clock specifier for codec MCLK.
++  - clock-names : Clock name string for 'clocks' attribute, should be "mclk".
++
++CODEC output pins:
++  "PORTA"	- Headphone
++  "PORTG"	- Class-D output
++  "PORTE"	- Line out
++
++CODEC output pins for Conexant DSP chip:
++  "AEC REF"	- AEC reference signal
++
++CODEC input pins:
++  "PORTB"	- Analog mic
++  "PORTC"	- Digital mic
++  "PORTD"	- Headset mic
++
++Example:
++
++codec: cx20721@33 {
++	compatible = "cnxt,cx20721";
++	reg = <0x33>;
++	clocks = <&sco>;
++	clock-names = "mclk";
++};
+-- 
+2.7.4
+
