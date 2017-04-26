@@ -1,2 +1,1 @@
-# driverpatch
-Conexant I2S Driver patches
+# Conexant I2S Driver patches
