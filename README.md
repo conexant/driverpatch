@@ -2,7 +2,7 @@
 
 This page provides porting guidelines for Conexant AudioSmart Dev Kit.  
 
-The folder rpi-patch/ contains driver patches are based on RPi kerenl branch "rpi-4.4.y" with kernel version 4.4.50 or commit id "e223d71ef728c559aa865d0c5a4cedbdf8789cfd"
+The folder [rpi-patch/](https://github.com/conexant/driverpatch/tree/master/rpi-patch) contains driver patches are based on RPi kerenl branch [rpi-4.4.y](https://github.com/raspberrypi/linux/tree/rpi-4.4.y) with kernel version 4.4.50 or commit id "e223d71ef728c559aa865d0c5a4cedbdf8789cfd"
 
 Please note that the patch might be not applied cleanly if you are using different kernel version. Fot that case, you need to take look at what changes are in the patch, and add them to you kernel manually.
 
