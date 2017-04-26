@@ -1,14 +1,12 @@
-# The driver porting guide for Conexant AudioSmart 4-Mic Development Kit. 
+# Conexant AudioSmart 4-Mic Development Kit driver Porting Guide.
 
-Please follow the following step to add drivers to RPi kerenel tree.
-The drive patch is based on RPi kerenl branch "rpi-4.4.y" with kernel 
-version 4.4.50 or commit id "e223d71ef728c559aa865d0c5a4cedbdf8789cfd"
+This page provides porting guidelines for Conexant AudioSmart Dev Kit.  
 
-Please note that the patch mihgt be not applied cleanly if you are using
-different kernel version. Fot that case, you need to take look at what 
-changes are in the patch, and add them to you kernel manually.
+The folder rpi-patch/ contains driver patches are based on RPi kerenl branch "rpi-4.4.y" with kernel version 4.4.50 or commit id "e223d71ef728c559aa865d0c5a4cedbdf8789cfd"
 
-The following instruction shows how to apply the patches on RPi kerenl.
+Please note that the patch mihgt be not applied cleanly if you are using different kernel version. Fot that case, you need to take look at what changes are in the patch, and add them to you kernel manually.
+
+Porting the driver requires the followig steps. 
 
 ## 1. Download Download specified RPI kerenl tree :
 
@@ -97,7 +95,7 @@ Please change it to SND_SOC_DAIFMT_CBS_CFS if you want the SoC as I2S
 Master.
 	
 							
-B ) The MCLK frequency is specified by ALSA API below. The default value is
+B) The MCLK frequency is specified by ALSA API below. The default value is
     12.288 MHz 
 
 ```c
