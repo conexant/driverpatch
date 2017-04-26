@@ -1,4 +1,4 @@
-#The kerenl driver porting guide for Conexant AudioSmart 4-Mic Development Kit. 
+# The driver porting guide for Conexant AudioSmart 4-Mic Development Kit. 
 
 Please follow the following step to add drivers to RPi kerenel tree.
 The drive patch is based on RPi kerenl branch "rpi-4.4.y" with kernel 
@@ -36,30 +36,23 @@ load the default setting for RPi3/2
 ```
 $KERNEL=kernel7
 $make bcm2709_defconfig
-```
-Open menu config, there are two option depends where 
-you build the kernel. If you build the kernel locally.
-
-```
 $make ARCH=arm menuconfig
 ```
-
-And then go to 
+And then go to menu
 ```
 	[Device Drivers] => [Sound card support] => [Advanced Linux Sound Architecture]
 	[ALSA for SoC audio support]=> [Support for Smart Speaker Pi add on soundcard (USB)]
 ```
-
 Check the following item.
 ```
 	[Support for Smart Speaker Pi add on soundcard (I2S)]
 ```
-##5- Build kerenl and modules .
+## 5. Build kerenl and modules .
 
 Following insturation on the following link to build and insatll kernel
 https://www.raspberrypi.org/documentation/linux/kernel/building.md
 
-##6- Load the overlay DT.
+## 6. Load the overlay DT.
 
 open /boot/config.txt and add the following statemnt.
 
